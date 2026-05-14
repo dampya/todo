@@ -1,0 +1,9 @@
+{"time":"2026-05-13T11:55:04.35767522Z","level":"INFO","msg":"users fetched","count":1,"nextCursor":1}
+{"time":"2026-05-13T12:17:07.566343025Z","level":"INFO","msg":"user updated","userID":1}
+{"time":"2026-05-13T12:17:12.091441178Z","level":"INFO","msg":"user updated","userID":1}
+{"time":"2026-05-13T12:17:24.081325732Z","level":"INFO","msg":"users fetched","count":1,"nextCursor":1}
+{"time":"2026-05-13T12:17:34.157475229Z","level":"INFO","msg":"user updated","userID":1}
+{"time":"2026-05-13T12:25:09.988425664Z","level":"INFO","msg":"user updated","userID":1}
+{"time":"2026-05-13T12:34:08.390207098Z","level":"INFO","msg":"user updated","userID":1}
+{"time":"2026-05-13T12:37:21.271252994Z","level":"INFO","msg":"users fetched","count":0,"nextCursor":0}
+{"time":"2026-05-13T12:37:33.50553077Z","level":"INFO","msg":"user created","userID":1,"username":"newusername"}
