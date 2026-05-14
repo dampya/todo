@@ -17,6 +17,7 @@ func NewUserHandler(userService *services.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 
+// POST /user
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 
@@ -33,6 +34,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	helpers.EncodeJSON(w, http.StatusCreated, user)
 }
 
+// GET /user/{userID}
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	userID, ok := helpers.GetUserID(w, r)
 	if !ok {
@@ -48,6 +50,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	helpers.EncodeJSON(w, http.StatusOK, user)
 }
 
+// GET /user
 func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	cursorStr := r.URL.Query().Get("cursor")
 	limitStr := r.URL.Query().Get("limit")
@@ -82,6 +85,7 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	helpers.EncodeJSON(w, http.StatusOK, resp)
 }
 
+// PUT /user/{userID}
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	userID, ok := helpers.GetUserID(w, r)
 	if !ok {
@@ -106,6 +110,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	helpers.EncodeJSON(w, http.StatusOK, updatedUser)
 }
 
+// DELETE /user/{userID}
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	userID, ok := helpers.GetUserID(w, r)
 	if !ok {

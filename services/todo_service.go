@@ -20,6 +20,7 @@ func NewTodoService(todoRepo repositories.TodoRepository, userRepo repositories.
 	}
 }
 
+// TodoHandler.CreateTodo
 func (s *TodoService) CreateTodo(userID uint, todo *models.Todo) error {
 	if userID == 0 {
 		return errors.New("invalid id")
@@ -45,6 +46,7 @@ func (s *TodoService) CreateTodo(userID uint, todo *models.Todo) error {
 	return nil
 }
 
+// TodoHandler.GetTodo
 func (s *TodoService) GetTodo(userID, todoID uint) (*models.Todo, error) {
 	if userID == 0 || todoID == 0 {
 		return nil, errors.New("invalid id")
@@ -64,6 +66,7 @@ func (s *TodoService) GetTodo(userID, todoID uint) (*models.Todo, error) {
 	return todo, nil
 }
 
+// TodoHandler.GetTodos
 func (s *TodoService) GetTodos(userID uint, page, limit int) ([]models.Todo, int64, error) {
 	if userID == 0 {
 		return nil, 0, errors.New("invalid id")
@@ -83,6 +86,7 @@ func (s *TodoService) GetTodos(userID uint, page, limit int) ([]models.Todo, int
 	return todos, total, nil
 }
 
+// TodoHandler.UpdateTodo
 func (s *TodoService) UpdateTodo(userID uint, todo *models.Todo) (*models.Todo, error) {
 	if userID == 0 || todo.ID == 0 {
 		return nil, errors.New("invalid id")
@@ -116,6 +120,7 @@ func (s *TodoService) UpdateTodo(userID uint, todo *models.Todo) (*models.Todo, 
 	return existing, nil
 }
 
+// TodoHandler.DeleteTodo
 func (s *TodoService) DeleteTodo(userID, todoID uint) error {
 	if userID == 0 || todoID == 0 {
 		return errors.New("invalid id")

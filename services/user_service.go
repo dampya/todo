@@ -4,9 +4,9 @@ import (
 	"errors"
 	"log/slog"
 
+	"go/todo/helpers"
 	"go/todo/models"
 	"go/todo/repositories"
-	"go/todo/helpers"
 )
 
 type UserService struct {
@@ -17,6 +17,7 @@ func NewUserService(userRepo repositories.UserRepository) *UserService {
 	return &UserService{userRepo: userRepo}
 }
 
+// UserHandler.CreateUser
 func (s *UserService) CreateUser(user *models.User) error {
 	if user.Username == "" || user.Password == "" {
 		return errors.New("missing fields")
@@ -34,9 +35,10 @@ func (s *UserService) CreateUser(user *models.User) error {
 	return nil
 }
 
+// UserHandler.GetUser
 func (s *UserService) GetUser(userID uint) (*models.User, error) {
 	if userID == 0 {
-		return nil, errors.New("invalid id")	
+		return nil, errors.New("invalid id")
 	}
 
 	user, err := s.userRepo.GetOne(userID)
@@ -49,6 +51,7 @@ func (s *UserService) GetUser(userID uint) (*models.User, error) {
 	return user, nil
 }
 
+// UserHandler.GetUsers
 func (s *UserService) GetUsers(cursor uint, limit int) ([]models.User, uint, error) {
 	if limit <= 0 || limit > 10 {
 		limit = 10
@@ -64,6 +67,7 @@ func (s *UserService) GetUsers(cursor uint, limit int) ([]models.User, uint, err
 	return users, nextCursor, nil
 }
 
+// UserHandler.UpdateUser
 func (s *UserService) UpdateUser(userID uint, user *models.User) (*models.User, error) {
 	if userID == 0 {
 		return nil, errors.New("invalid id")
@@ -90,9 +94,10 @@ func (s *UserService) UpdateUser(userID uint, user *models.User) (*models.User, 
 	return existing, nil
 }
 
-func (s *UserService) DeleteUser(userID uint) error {	
+// UserHandler.DeleteUser
+func (s *UserService) DeleteUser(userID uint) error {
 	if userID == 0 {
-		return errors.New("invalid id")	
+		return errors.New("invalid id")
 	}
 
 	if err := s.userRepo.DeleteUserTodos(userID); err != nil {

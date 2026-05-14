@@ -16,10 +16,12 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	}
 }
 
+// UserService.CreateUser
 func (r *userRepository) Create(user *models.User) error {
 	return r.db.Create(user).Error
 }
 
+// UserService.GetUser
 func (r *userRepository) GetOne(userID uint) (*models.User, error) {
 	var user models.User
 
@@ -30,6 +32,7 @@ func (r *userRepository) GetOne(userID uint) (*models.User, error) {
 	return &user, nil
 }
 
+// UserService.GetUsers
 func (r *userRepository) GetAll(cursor uint, limit int) ([]models.User, uint, error) {
 	var users []models.User
 
@@ -54,14 +57,17 @@ func (r *userRepository) GetAll(cursor uint, limit int) ([]models.User, uint, er
 	return users, nextCursor, nil
 }
 
+// UserService.UpdateUser
 func (r *userRepository) Update(user *models.User) error {
 	return r.db.Save(user).Error
 }
 
+// UserService.DeleteUser
 func (r *userRepository) Delete(userID uint) error {
 	return r.db.Delete(&models.User{}, userID).Error
 }
 
+// UserService.DeleteUser
 func (r *userRepository) DeleteUserTodos(userID uint) error {
 	return r.db.
 		Where("user_id = ?", userID).

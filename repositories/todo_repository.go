@@ -16,10 +16,12 @@ func NewTodoRepository(db *gorm.DB) TodoRepository {
 	}
 }
 
+// TodoService.CreateTodo
 func (r *todoRepository) Create(todo *models.Todo) error {
 	return r.db.Create(todo).Error
 }
 
+// TodoService.GetTodo
 func (r *todoRepository) GetOne(todoID uint) (*models.Todo, error) {
 	var todo models.Todo
 
@@ -30,6 +32,7 @@ func (r *todoRepository) GetOne(todoID uint) (*models.Todo, error) {
 	return &todo, nil
 }
 
+// TodoService.GetTodos
 func (r *todoRepository) GetAll(userID uint, page int, limit int) ([]models.Todo, int64, error) {
 	var todos []models.Todo
 	var total int64
@@ -57,10 +60,12 @@ func (r *todoRepository) GetAll(userID uint, page int, limit int) ([]models.Todo
 	return todos, total, nil
 }
 
+// TodoService.UpdateTodo
 func (r *todoRepository) Update(todo *models.Todo) error {
 	return r.db.Save(todo).Error
 }
 
+// TodoService.DeleteTodo
 func (r *todoRepository) Delete(todoID uint) error {
 	return r.db.Delete(&models.Todo{}, todoID).Error
 }

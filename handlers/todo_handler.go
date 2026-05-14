@@ -17,6 +17,7 @@ func NewTodoHandler(todoService *services.TodoService) *TodoHandler {
 	return &TodoHandler{todoService: todoService}
 }
 
+// POST /user/{userID}/todo
 func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	userID, ok := helpers.GetUserID(w, r)
 	if !ok {
@@ -38,6 +39,7 @@ func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	helpers.EncodeJSON(w, http.StatusCreated, todo)
 }
 
+// GET /user/{userID}/todo/{todoID}
 func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	userID, ok := helpers.GetUserID(w, r)
 	if !ok {
@@ -58,6 +60,7 @@ func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	helpers.EncodeJSON(w, http.StatusOK, todo)
 }
 
+// GET /user/{userID}/todo
 func (h *TodoHandler) GetTodos(w http.ResponseWriter, r *http.Request) {
 	userID, ok := helpers.GetUserID(w, r)
 	if !ok {
@@ -95,6 +98,7 @@ func (h *TodoHandler) GetTodos(w http.ResponseWriter, r *http.Request) {
 	helpers.EncodeJSON(w, http.StatusOK, resp)
 }
 
+// PUT /user/{userID}/todo/{todoID}
 func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	userID, ok := helpers.GetUserID(w, r)
 	if !ok {
@@ -124,6 +128,7 @@ func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	helpers.EncodeJSON(w, http.StatusOK, updatedTodo)
 }
 
+// DELETE /user/{userID}/todo/{todoID}
 func (h *TodoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	userID, ok := helpers.GetUserID(w, r)
 	if !ok {
