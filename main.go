@@ -21,7 +21,7 @@ func main() {
 	_ = godotenv.Load()
 
 	file, err := os.OpenFile(
-		"/home/om/projects/todo/log/app.log",
+		"/home/om/projects/todo/telemetry/log/app.log",
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND,
 		0666,
 	)
