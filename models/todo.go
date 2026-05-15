@@ -1,13 +1,16 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type Todo struct {
-	gorm.Model
+	ID		uint		`json:"id"`
+	CreatedAt	time.Time	`json:"created_at"`
+	UpdatedAt	time.Time	`json:"updated_at"`
+
 	Title		string		`json:"title"`
 	Description	string		`json:"description"`
 	Completed	bool		`json:"completed"`
-	UserID		uint		`gorm:"foreignKey:UserID"`
+	UserID		uint		`json:"user_id"`
 }
 
 type PaginatedTodosResponse struct {

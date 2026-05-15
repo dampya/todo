@@ -1,9 +1,9 @@
 package services
 
 import (
-	"errors"
 	"log/slog"
 
+	"go/todo/helpers"
 	"go/todo/models"
 	"go/todo/repositories"
 )
@@ -13,63 +13,72 @@ type TodoService struct {
 	userRepo repositories.UserRepository
 }
 
-func NewTodoService(todoRepo repositories.TodoRepository, userRepo repositories.UserRepository) *TodoService {
+func NewTodoService(
+	todoRepo repositories.TodoRepository,
+	userRepo repositories.UserRepository,
+	) *TodoService {
 	return &TodoService{
 		todoRepo: todoRepo,
 		userRepo: userRepo,
 	}
 }
 
-// TodoHandler.CreateTodo
+// CreateTodo
 func (s *TodoService) CreateTodo(userID uint, todo *models.Todo) error {
 	if userID == 0 {
-		return errors.New("invalid id")
+		return helpers.ErrInvalidID
 	}
 
 	_, err := s.userRepo.GetOne(userID)
 	if err != nil {
-		return errors.New("user not found")
+		return helpers.ErrUserNotFound
 	}
 
 	if todo.Title == "" || todo.Description == "" {
-		return errors.New("missing fields")
+		return helpers.ErrMissingFields
 	}
 
 	todo.UserID = userID
 
 	if err := s.todoRepo.Create(todo); err != nil {
-		return err
+		return helpers.MapDBError(err)
 	}
 
-	slog.Info("todo created", "userID", userID, "todoID", todo.ID)
+	slog.Info("todo created",
+		"userID", userID,
+		"todoID", todo.ID,
+	)
 
 	return nil
 }
 
-// TodoHandler.GetTodo
+// GetTodo
 func (s *TodoService) GetTodo(userID, todoID uint) (*models.Todo, error) {
 	if userID == 0 || todoID == 0 {
-		return nil, errors.New("invalid id")
+		return nil, helpers.ErrInvalidID
 	}
 
 	todo, err := s.todoRepo.GetOne(todoID)
 	if err != nil {
-		return nil, err
+		return nil, helpers.ErrTodoNotFound
 	}
 
 	if todo.UserID != userID {
-		return nil, errors.New("forbidden")
+		return nil, helpers.ErrForbidden
 	}
 
-	slog.Info("todo fetched", "userID", userID, "todoID", todoID)
+	slog.Info("todo fetched",
+		"userID", userID,
+		"todoID", todoID,
+	)
 
 	return todo, nil
 }
 
-// TodoHandler.GetTodos
+// GetTodos
 func (s *TodoService) GetTodos(userID uint, page, limit int) ([]models.Todo, int64, error) {
 	if userID == 0 {
-		return nil, 0, errors.New("invalid id")
+		return nil, 0, helpers.ErrInvalidID
 	}
 
 	if limit <= 0 || limit > 10 {
@@ -81,24 +90,27 @@ func (s *TodoService) GetTodos(userID uint, page, limit int) ([]models.Todo, int
 		return nil, 0, err
 	}
 
-	slog.Info("todos fetched", "userID", userID, "count", len(todos))
+	slog.Info("todos fetched",
+		"userID", userID,
+		"count", len(todos),
+	)
 
 	return todos, total, nil
 }
 
-// TodoHandler.UpdateTodo
+// UpdateTodo
 func (s *TodoService) UpdateTodo(userID uint, todo *models.Todo) (*models.Todo, error) {
 	if userID == 0 || todo.ID == 0 {
-		return nil, errors.New("invalid id")
+		return nil, helpers.ErrInvalidID
 	}
 
 	existing, err := s.todoRepo.GetOne(todo.ID)
 	if err != nil {
-		return nil, err
+		return nil, helpers.ErrTodoNotFound
 	}
 
 	if existing.UserID != userID {
-		return nil, errors.New("forbidden")
+		return nil, helpers.ErrForbidden
 	}
 
 	if todo.Title != "" {
@@ -112,34 +124,40 @@ func (s *TodoService) UpdateTodo(userID uint, todo *models.Todo) (*models.Todo, 
 	existing.Completed = todo.Completed
 
 	if err := s.todoRepo.Update(existing); err != nil {
-		return nil, err
+		return nil, helpers.MapDBError(err)
 	}
 
-	slog.Info("todo updated", "userID", userID, "todoID", todo.ID)
+	slog.Info("todo updated",
+		"userID", userID,
+		"todoID", todo.ID,
+	)
 
 	return existing, nil
 }
 
-// TodoHandler.DeleteTodo
+// DeleteTodo
 func (s *TodoService) DeleteTodo(userID, todoID uint) error {
 	if userID == 0 || todoID == 0 {
-		return errors.New("invalid id")
+		return helpers.ErrInvalidID
 	}
 
 	todo, err := s.todoRepo.GetOne(todoID)
 	if err != nil {
-		return err
+		return helpers.ErrTodoNotFound
 	}
 
 	if todo.UserID != userID {
-		return errors.New("forbidden")
+		return helpers.ErrForbidden
 	}
 
 	if err := s.todoRepo.Delete(todoID); err != nil {
-		return err
+		return helpers.MapDBError(err)
 	}
 
-	slog.Info("todo deleted", "userID", userID, "todoID", todoID)
+	slog.Info("todo deleted",
+		"userID", userID,
+		"todoID", todoID,
+	)
 
 	return nil
 }

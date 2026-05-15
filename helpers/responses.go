@@ -8,19 +8,18 @@ import (
 func EncodeJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
+	_ = json.NewEncoder(w).Encode(data)
 }
 
 func DecodeJSON(r *http.Request, dst any) error {
 	defer r.Body.Close()
-	return json.NewDecoder(r.Body).Decode(dst)
-}
 
-func WriteError(w http.ResponseWriter, status int, msg string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
 
-	json.NewEncoder(w).Encode(map[string]string{
-		"error": msg,
-	})
+	if err := decoder.Decode(dst); err != nil {
+		return ErrInvalidJSON
+	}
+
+	return nil
 }

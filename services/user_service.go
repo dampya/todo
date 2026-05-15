@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"log/slog"
 
 	"go/todo/helpers"
@@ -17,33 +16,33 @@ func NewUserService(userRepo repositories.UserRepository) *UserService {
 	return &UserService{userRepo: userRepo}
 }
 
-// UserHandler.CreateUser
+// CreateUser
 func (s *UserService) CreateUser(user *models.User) error {
 	if user.Username == "" || user.Password == "" {
-		return errors.New("missing fields")
+		return helpers.ErrMissingFields
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
-		if helpers.IsDuplicateError(err) {
-			return errors.New("username already exists")
-		}
-		return err
+		return helpers.MapDBError(err)
 	}
 
-	slog.Info("user created", "userID", user.ID, "username", user.Username)
+	slog.Info("user created",
+		"userID", user.ID,
+		"username", user.Username,
+	)
 
 	return nil
 }
 
-// UserHandler.GetUser
+// GetUser
 func (s *UserService) GetUser(userID uint) (*models.User, error) {
 	if userID == 0 {
-		return nil, errors.New("invalid id")
+		return nil, helpers.ErrInvalidID
 	}
 
 	user, err := s.userRepo.GetOne(userID)
 	if err != nil {
-		return nil, err
+		return nil, helpers.ErrUserNotFound
 	}
 
 	slog.Info("user fetched", "userID", userID)
@@ -51,7 +50,7 @@ func (s *UserService) GetUser(userID uint) (*models.User, error) {
 	return user, nil
 }
 
-// UserHandler.GetUsers
+// GetUsers
 func (s *UserService) GetUsers(cursor uint, limit int) ([]models.User, uint, error) {
 	if limit <= 0 || limit > 10 {
 		limit = 10
@@ -62,31 +61,34 @@ func (s *UserService) GetUsers(cursor uint, limit int) ([]models.User, uint, err
 		return nil, 0, err
 	}
 
-	slog.Info("users fetched", "count", len(users), "nextCursor", nextCursor)
+	slog.Info("users fetched",
+		"count", len(users),
+		"nextCursor", nextCursor,
+	)
 
 	return users, nextCursor, nil
 }
 
-// UserHandler.UpdateUser
+// UpdateUser
 func (s *UserService) UpdateUser(userID uint, user *models.User) (*models.User, error) {
 	if userID == 0 {
-		return nil, errors.New("invalid id")
+		return nil, helpers.ErrInvalidID
 	}
 
 	if user.Username == "" || user.Password == "" {
-		return nil, errors.New("fields cannot be empty")
+		return nil, helpers.ErrEmptyFields
 	}
 
 	existing, err := s.userRepo.GetOne(userID)
 	if err != nil {
-		return nil, err
+		return nil, helpers.ErrUserNotFound
 	}
 
 	existing.Username = user.Username
 	existing.Password = user.Password
 
 	if err := s.userRepo.Update(existing); err != nil {
-		return nil, err
+		return nil, helpers.DBError(err)
 	}
 
 	slog.Info("user updated", "userID", userID)
@@ -94,18 +96,24 @@ func (s *UserService) UpdateUser(userID uint, user *models.User) (*models.User, 
 	return existing, nil
 }
 
-// UserHandler.DeleteUser
+// DeleteUser
 func (s *UserService) DeleteUser(userID uint) error {
 	if userID == 0 {
-		return errors.New("invalid id")
+		return helpers.ErrInvalidID
+	}
+
+	// ensure user exists
+	_, err := s.userRepo.GetOne(userID)
+	if err != nil {
+		return helpers.ErrUserNotFound
 	}
 
 	if err := s.userRepo.DeleteUserTodos(userID); err != nil {
-		return err
+		return helpers.DBError(err)
 	}
 
 	if err := s.userRepo.Delete(userID); err != nil {
-		return err
+		return helpers.DBError(err)
 	}
 
 	slog.Info("user deleted", "userID", userID)

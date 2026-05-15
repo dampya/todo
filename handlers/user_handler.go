@@ -22,12 +22,12 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 
 	if err := helpers.DecodeJSON(r, &user); err != nil {
-		helpers.WriteError(w, http.StatusBadRequest, "invalid json")
+		helpers.HandleError(w, err)
 		return
 	}
 
 	if err := h.userService.CreateUser(&user); err != nil {
-		helpers.WriteError(w, http.StatusBadRequest, err.Error())
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -36,14 +36,15 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 // GET /user/{userID}
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	userID, ok := helpers.GetUserID(w, r)
-	if !ok {
+	userID, err := helpers.GetUserID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
 	user, err := h.userService.GetUser(userID)
 	if err != nil {
-		helpers.WriteError(w, http.StatusNotFound, err.Error())
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -72,7 +73,7 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	users, nextCursor, err := h.userService.GetUsers(cursor, limit)
 	if err != nil {
-		helpers.WriteError(w, http.StatusInternalServerError, "failed to get users")
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -87,15 +88,16 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 // PUT /user/{userID}
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	userID, ok := helpers.GetUserID(w, r)
-	if !ok {
+	userID, err := helpers.GetUserID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
 	var user models.User
 
 	if err := helpers.DecodeJSON(r, &user); err != nil {
-		helpers.WriteError(w, http.StatusBadRequest, "invalid json")
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -103,7 +105,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	updatedUser, err := h.userService.UpdateUser(userID, &user)
 	if err != nil {
-		helpers.WriteError(w, http.StatusBadRequest, err.Error())
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -112,13 +114,14 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /user/{userID}
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	userID, ok := helpers.GetUserID(w, r)
-	if !ok {
+	userID, err := helpers.GetUserID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
 	if err := h.userService.DeleteUser(userID); err != nil {
-		helpers.WriteError(w, http.StatusInternalServerError, err.Error())
+		helpers.HandleError(w, err)
 		return
 	}
 

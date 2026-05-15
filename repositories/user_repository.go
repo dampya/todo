@@ -1,51 +1,136 @@
 package repositories
 
 import (
+	"database/sql"
 	"go/todo/models"
-
-	"gorm.io/gorm"
 )
 
 type userRepository struct {
-	db *gorm.DB
+	db *sql.DB
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
+func NewUserRepository(db *sql.DB) UserRepository {
 	return &userRepository{
 		db: db,
 	}
 }
 
-// UserService.CreateUser
+// Create User
 func (r *userRepository) Create(user *models.User) error {
-	return r.db.Create(user).Error
+	query := `
+		INSERT INTO users
+		(username, password, created_at, updated_at)
+		VALUES ($1, $2, NOW(), NOW())
+		RETURNING id, created_at, updated_at
+	`
+
+	return r.db.QueryRow(
+		query,
+		user.Username,
+		user.Password,
+	).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
 }
 
-// UserService.GetUser
+// Get One User
 func (r *userRepository) GetOne(userID uint) (*models.User, error) {
+	query := `
+		SELECT
+			id,
+			username,
+			password,
+			created_at,
+			updated_at
+		FROM users
+		WHERE id = $1
+	`
+
 	var user models.User
 
-	if err := r.db.First(&user, userID).Error; err != nil {
+	err := r.db.QueryRow(query, userID).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-// UserService.GetUsers
-func (r *userRepository) GetAll(cursor uint, limit int) ([]models.User, uint, error) {
-	var users []models.User
+// Get All Users (Cursor Pagination)
+func (r *userRepository) GetAll(
+	cursor uint,
+	limit int,) ([]models.User, uint, error) {
 
-	query := r.db.
-		Order("id ASC").
-		Limit(limit)
+	var (
+		rows *sql.Rows
+		err  error
+	)
 
 	if cursor > 0 {
-		query = query.Where("id > ?", cursor)
+		query := `
+			SELECT
+				id,
+				username,
+				password,
+				created_at,
+				updated_at
+			FROM users
+			WHERE id > $1
+			ORDER BY id ASC
+			LIMIT $2
+		`
+
+		rows, err = r.db.Query(query, cursor, limit)
+
+	} else {
+		query := `
+			SELECT
+				id,
+				username,
+				password,
+				created_at,
+				updated_at
+			FROM users
+			ORDER BY id ASC
+			LIMIT $1
+		`
+
+		rows, err = r.db.Query(query, limit)
 	}
 
-	if err := query.Find(&users).Error; err != nil {
+	if err != nil {
 		return nil, 0, err
+	}
+
+	defer rows.Close()
+
+	var users []models.User
+
+	for rows.Next() {
+		var user models.User
+
+		err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Password,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, 0, err
+		}
+
+		users = append(users, user)
 	}
 
 	var nextCursor uint
@@ -57,19 +142,41 @@ func (r *userRepository) GetAll(cursor uint, limit int) ([]models.User, uint, er
 	return users, nextCursor, nil
 }
 
-// UserService.UpdateUser
+// Update User
 func (r *userRepository) Update(user *models.User) error {
-	return r.db.Save(user).Error
+	query := `
+		UPDATE users
+		SET
+			username = $1,
+			password = $2,
+			updated_at = NOW()
+		WHERE id = $3
+	`
+
+	_, err := r.db.Exec(
+		query,
+		user.Username,
+		user.Password,
+		user.ID,
+	)
+
+	return err
 }
 
-// UserService.DeleteUser
+// Delete User
 func (r *userRepository) Delete(userID uint) error {
-	return r.db.Delete(&models.User{}, userID).Error
+	query := `DELETE FROM users WHERE id = $1`
+
+	_, err := r.db.Exec(query, userID)
+
+	return err
 }
 
-// UserService.DeleteUser
+// Delete User Todos
 func (r *userRepository) DeleteUserTodos(userID uint) error {
-	return r.db.
-		Where("user_id = ?", userID).
-		Delete(&models.Todo{}).Error
+	query := `DELETE FROM todos WHERE user_id = $1`
+
+	_, err := r.db.Exec(query, userID)
+
+	return err
 }

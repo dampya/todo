@@ -1,15 +1,18 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type User struct {
-	gorm.Model
-	Username	string		`json:"username" gorm:"uniqueIndex:idx_users_username"`
+	ID        	uint      	`json:"id"`
+	CreatedAt 	time.Time 	`json:"created_at"`
+	UpdatedAt	time.Time 	`json:"updated_at"`
+
+	Username	string    	`json:"username"`
 	Password	string		`json:"password"`
 }
 
 type PaginatedUsersResponse struct {
-    Cursor 		uint   		`json:"cursor"`
-    Limit  		int    		`json:"limit"`
-    Users  		[]User 		`json:"users"`
+	Cursor		uint		`json:"cursor"`
+	Limit		int		`json:"limit"`
+	Users		[]User		`json:"users"`
 }

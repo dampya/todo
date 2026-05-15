@@ -19,20 +19,21 @@ func NewTodoHandler(todoService *services.TodoService) *TodoHandler {
 
 // POST /user/{userID}/todo
 func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
-	userID, ok := helpers.GetUserID(w, r)
-	if !ok {
+	userID, err := helpers.GetUserID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
 	var todo models.Todo
 
 	if err := helpers.DecodeJSON(r, &todo); err != nil {
-		helpers.WriteError(w, http.StatusBadRequest, "invalid json")
+		helpers.HandleError(w, err)
 		return
 	}
 
 	if err := h.todoService.CreateTodo(userID, &todo); err != nil {
-		helpers.WriteError(w, http.StatusBadRequest, err.Error())
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -41,19 +42,21 @@ func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 // GET /user/{userID}/todo/{todoID}
 func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
-	userID, ok := helpers.GetUserID(w, r)
-	if !ok {
+	userID, err := helpers.GetUserID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
-	todoID, ok := helpers.GetTodoID(w, r)
-	if !ok {
+	todoID, err := helpers.GetTodoID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
 	todo, err := h.todoService.GetTodo(userID, todoID)
 	if err != nil {
-		helpers.WriteError(w, http.StatusForbidden, err.Error())
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -62,8 +65,9 @@ func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 
 // GET /user/{userID}/todo
 func (h *TodoHandler) GetTodos(w http.ResponseWriter, r *http.Request) {
-	userID, ok := helpers.GetUserID(w, r)
-	if !ok {
+	userID, err := helpers.GetUserID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -84,7 +88,7 @@ func (h *TodoHandler) GetTodos(w http.ResponseWriter, r *http.Request) {
 
 	todos, total, err := h.todoService.GetTodos(userID, page, limit)
 	if err != nil {
-		helpers.WriteError(w, http.StatusInternalServerError, "failed to get todos")
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -100,20 +104,22 @@ func (h *TodoHandler) GetTodos(w http.ResponseWriter, r *http.Request) {
 
 // PUT /user/{userID}/todo/{todoID}
 func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
-	userID, ok := helpers.GetUserID(w, r)
-	if !ok {
+	userID, err := helpers.GetUserID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
-	todoID, ok := helpers.GetTodoID(w, r)
-	if !ok {
+	todoID, err := helpers.GetTodoID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
 	var todo models.Todo
 
 	if err := helpers.DecodeJSON(r, &todo); err != nil {
-		helpers.WriteError(w, http.StatusBadRequest, "invalid json")
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -121,7 +127,7 @@ func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 
 	updatedTodo, err := h.todoService.UpdateTodo(userID, &todo)
 	if err != nil {
-		helpers.WriteError(w, http.StatusBadRequest, err.Error())
+		helpers.HandleError(w, err)
 		return
 	}
 
@@ -130,18 +136,20 @@ func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /user/{userID}/todo/{todoID}
 func (h *TodoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
-	userID, ok := helpers.GetUserID(w, r)
-	if !ok {
+	userID, err := helpers.GetUserID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
-	todoID, ok := helpers.GetTodoID(w, r)
-	if !ok {
+	todoID, err := helpers.GetTodoID(r)
+	if err != nil {
+		helpers.HandleError(w, err)
 		return
 	}
 
 	if err := h.todoService.DeleteTodo(userID, todoID); err != nil {
-		helpers.WriteError(w, http.StatusBadRequest, err.Error())
+		helpers.HandleError(w, err)
 		return
 	}
 
